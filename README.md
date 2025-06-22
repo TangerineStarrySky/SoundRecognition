@@ -24,14 +24,18 @@
 
 1. **环境准备**
 - Python 3.x
-- NumPy
-- SciPy
+- numpy
+- scipy
 - librosa
 - hmmlearn
+- flask
+- flask-cors
+- pyaudio
+- scikit-learn
 
 2. **安装依赖**
 ```bash
-pip install numpy scipy librosa hmmlearn
+pip install numpy scipy librosa hmmlearn flask flask-cors pyaudio scikit-learn
 ```
 
 3. **运行前端界面**
