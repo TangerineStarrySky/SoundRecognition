@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>孤立词语音识别系统</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: linear-gradient(135deg, #e6f0ff, #d9eaff);
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+
+      /* 渐变背景：从深蓝到浅紫 */
+      background: linear-gradient(135deg, #46f29f, #0007dd, #56f9b5);
+      background-size: 400% 400%;
+    }
+
+    h1 {
+      font-size: 40px;
+      color: #1a2a4f;
+      text-shadow: 1px 1px 2px #ccc;
+      text-align: center;
+    }
+
+    #viz {
+      width: 90%;
+      max-width: 1200px;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    canvas {
+      width: 100%;
+      height: 160px;
+      border-radius: 16px;
+      background: white;
+      box-shadow: 0px 0px 16px rgba(0, 123, 255, 0.4);
+    }
+
+    .word-list {
+      font-size: 18px;
+      line-height: 1.4;
+      font-weight: 500;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 16px;
+      padding: 10px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .word-list span {
+      background: #eef4ff;
+      padding: 8px 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      transition: background 0.2s ease;
+    }
+
+    .word-list span:hover {
+      background: #d2e8ff;
+    }
+
+    #controls {
+      margin: 15px 0;
+      text-align: center;
+    }
+
+    #recordButton {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 80px;
+      font-size: 22px;
+      border-radius: 60px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+    }
+
+    #recordButton:hover {
+      background: #0056b3;
+      transform: scale(1.05);
+    }
+
+    #result {
+      font-size: 22px;
+      font-weight: bold;
+      color: #222;
+      text-align: center;
+    }
+
+    #recordingsList {
+      list-style: none;
+      padding: 0;
+      width: 90%;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    #recordingsList li {
+      background: white;
+      padding: 8px 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      margin-top: 12px;
+      text-align: center;
+      font-size: 20px;
+    }
+
+    audio {
+      width: 100%;
+      margin-top: 5px;
+    }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 32px;
+      }
+
+      #recordButton {
+        font-size: 20px;
+        padding: 14px 28px;
+      }
+
+      .word-list {
+        font-size: 18px;
+        gap: 10px;
+      }
+
+      canvas {
+        height: 250px;
+      }
+    }
+
+    recobutton,
+    refreshbutton {
+      background-color: #2196F3;
+      color: white;
+      font-size: 18px;
+      padding: 8px 80px;
+      margin: 5px 20px;
+      text-align: center;
+      display: inline-block;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(33, 150, 243, 0.4);
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+
+    /* 悬停与聚焦效果 */
+    recobutton:hover,
+    refreshbutton:hover,
+    recobutton:focus,
+    refreshbutton:focus {
+      outline: none;
+      background: #03A9F4;
+      transform: scale(1.05);
+    }
+
+    /* Firefox 内边框去除 */
+    recobutton::-moz-focus-inner,
+    refreshbutton::-moz-focus-inner {
+      border: 0;
+    }
+
+  </style>
+</head>
+<body>
+
+  <h1>孤立词语音识别系统</h1>
+
+  <div id="viz">
+    <canvas id="analyser" width="1024" height="200"></canvas>
+  </div>
+
+  <div class="word-list">
+    <span>数字</span> <span>语音</span> <span>语言</span> <span>处理</span> <span>中国</span>
+    <span>忠告</span> <span>北京</span> <span>背景</span> <span>上海</span> <span>商行</span>
+  </div>
+  <div class="word-list">
+    <span>Speech</span> <span>Speaker</span> <span>Signal</span> <span>Sequence</span>
+    <span>Processing</span> <span>Print</span> <span>Project</span> <span>File</span>
+    <span>Open</span> <span>Close</span>
+  </div>
+
+  <div id="controls">
+    <button id="recordButton">🎤 开始录音</button>
+  </div>
+
+  <div id="result"></div>
+
+  <ol id="recordingsList"></ol>
+
+  <script src="/static/recorderjs/recorder.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>
